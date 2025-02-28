@@ -1,6 +1,6 @@
 # Fitbit Health Tracker API
 
-![Fitbit Logo](https://upload.wikimedia.org/wikipedia/commons/8/8e/Fitbit_logo_2016.svg)
+![Fitbit Logo]([https://upload.wikimedia.org/wikipedia/commons/8/8e/Fitbit_logo_2016.svg](https://getvectorlogo.com/wp-content/uploads/2022/05/fitbit-vector-logo-2022.png))
 
 A Python-based application that collects health data from Fitbit devices using the Fitbit Web API. Designed for tracking the health metrics of elderly users in a residence, this project automates data collection, stores it in a PostgreSQL database, and provides a simple interface for monitoring.
 
