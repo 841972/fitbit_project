@@ -38,27 +38,40 @@ Before running the project, ensure you have the following installed:
 
 ### Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/fitbit-device-linking.git
-   cd fitbit-device-linking
-2. **Set up a virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-3 .**Install dependencies**:
+# Setup Instructions 🛠️
+
+## 1. Clone the repository
+```bash
+git clone https://github.com/your-username/fitbit-device-linking.git
+cd fitbit-device-linking
+```
+
+## 2. Set up a virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+## 3. Install dependencies
+```bash
 pip install -r requirements.txt
-4. **Set up the database**:
-   -Create a PostgreSQL database and update the connection details in config.py.
-   -Run the database migrations (if applicable).
-5. **Configure Fitbit OAuth**:
-   Update the CLIENT_ID and REDIRECT_URI in config.py with your Fitbit Developer credentials.
+```
 
-6. **Run the application**:
-   python app.py
+## 4. Set up the database
+- Create a PostgreSQL database and update the connection details in `config.py`.
+- Run the database migrations (if applicable).
 
-7. **Run the application**:
-   Open your browser and go to http://localhost:5000
+## 5. Configure Fitbit OAuth
+Update the `CLIENT_ID` and `REDIRECT_URI` in `config.py` with your Fitbit Developer credentials.
+
+## 6. Run the application
+```bash
+python app.py
+```
+
+## 7. Access the application
+Open your browser and go to [http://localhost:5000](http://localhost:5000).
+
 
    # Usage 🖥️
 ## Linking a Device
