@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmation - Fitbit Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Device Linking Confirmation</h1>
+    
+    <div class="alert alert-success" role="alert">
+        <!-- "Tick" animation -->
+        <div class="tick-animation"></div>
+        
+        <h4 class="alert-heading">Linking Successful!</h4>
+        <p>
+            The Fitbit device has been successfully linked.
+        </p>
+        <hr>
+        <p class="mb-0">
+            <strong>User:</strong> {{ user_name }}<br>
+            <strong>Email:</strong> {{ email }}
+        </p>
+    </div>
+
+    <!-- "Return to Home" button (initially not clickable) -->
+    <div class="button-container">
+        <a href="{{ url_for('index') }}" class="btn btn-primary disabled" id="home-button">
+            Return to Home
+        </a>
+        <span id="countdown">5</span>
+    </div>
+</div>
+
+<!-- Script to handle countdown, enable the button, and expand it -->
+<script>
+    // Countdown duration in seconds
+    let seconds = 5;
+    const countdownElement = document.getElementById('countdown');
+    const homeButton = document.getElementById('home-button');
+    const buttonContainer = document.querySelector('.button-container');
+
+    // Function to update the countdown
+    const countdownInterval = setInterval(function() {
+        seconds--;
+        countdownElement.textContent = seconds;
+
+        // When the countdown reaches 0
+        if (seconds <= 0) {
+            clearInterval(countdownInterval);
+
+            // Enable the button
+            homeButton.classList.remove('disabled');
+            homeButton.style.opacity = '1';
+            homeButton.style.cursor = 'pointer';
+            homeButton.style.pointerEvents = 'auto'; // Ensure the button is clickable
+
+            // Hide the countdown
+            countdownElement.style.display = 'none';
+
+            // Expand the button with a slide animation
+            homeButton.style.transition = 'width 0.5s ease';
+            homeButton.style.width = '100%'; // Adjust to 100% of the container
+
+            // Ensure the button is on top of other elements
+            homeButton.style.zIndex = '10';
+        }
+    }, 1000); // Update every second
+</script>
+
+<!-- Styles for the "tick" animation, button, and container -->
+<style>
+    /* Styles for the button and countdown */
+    .button-container {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Space between the button and the countdown */
+        width: 100%; /* Ensure the container takes full width */
+        position: relative; /* Ensure the container is a positioning context */
+    }
+
+    #home-button {
+        width: auto; /* Initial button width */
+        opacity: 0.5; /* Faded button */
+        cursor: not-allowed; /* Cursor indicating it's not clickable */
+        pointer-events: none; /* Disable clicks */
+        transition: opacity 0.5s ease, width 0.5s ease; /* Smooth transitions */
+        position: relative; /* Ensure the button is positioned correctly */
+    }
+
+    #home-button.disabled {
+        opacity: 0.5; /* Faded button */
+        cursor: not-allowed; /* Cursor indicating it's not clickable */
+        pointer-events: none; /* Disable clicks */
+    }
+
+    #countdown {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

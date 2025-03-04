@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Fitbit Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container text-center">
+    <h1>Bienvenido al Dashboard de Fitbit</h1>
+    <p>Aquí puedes ver y gestionar los datos de tus dispositivos Fitbit vinculados.</p>
+    
+    <!-- Botón para redirigir a /link -->
+    <a href="{{ url_for('link_device') }}" class="btn btn-primary">
+        Vincular un Dispositivo Fitbit
+    </a>
+</div>
+{% endblock %}

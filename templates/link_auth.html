@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Autorizar Fitbit - Fitbit Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container text-center">
+    <h1>Autorizar Fitbit</h1>
+    <p>Por favor, haz clic en el siguiente enlace para autorizar tu cuenta Fitbit:</p>
+    <a href="{{ auth_url }}" class="btn btn-primary">Autorizar Fitbit</a>
+</div>
+{% endblock %}  

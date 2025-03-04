@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Vincular Dispositivo - Fitbit Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Vincular un Dispositivo Fitbit</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="email" class="form-label">Selecciona un email:</label>
+            <select name="email" id="email" class="form-select" required>
+                {% for email in emails %}
+                <option value="{{ email }}">{{ email }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Autorizar Fitbit</button>
+    </form>
+</div>
+{% endblock %}

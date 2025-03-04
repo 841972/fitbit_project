@@ -1,0 +1,6 @@
+# .gitignore
+config.js
+.codegpt
+.env
+.vscode
+credentials.json

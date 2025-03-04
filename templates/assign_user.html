@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Asignar Usuario - Fitbit Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Asignar Nuevo Usuario</h1>
+    
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('assign_user') }}">
+        <div class="mb-3">
+            <label for="user_name" class="form-label">Nombre del nuevo usuario:</label>
+            <input type="text" name="user_name" id="user_name" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Asignar</button>
+        <a href="{{ url_for('link_device') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
