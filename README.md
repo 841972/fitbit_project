@@ -42,3 +42,97 @@ Before running the project, ensure you have the following installed:
    ```bash
    git clone https://github.com/your-username/fitbit-device-linking.git
    cd fitbit-device-linking
+2. **Set up a virtual environment**:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+3 .**Install dependencies**:
+pip install -r requirements.txt
+4. **Set up the database**:
+   -Create a PostgreSQL database and update the connection details in config.py.
+   -Run the database migrations (if applicable).
+5. **Configure Fitbit OAuth**:
+   Update the CLIENT_ID and REDIRECT_URI in config.py with your Fitbit Developer credentials.
+
+6. **Run the application**:
+   python app.py
+
+7. **Run the application**:
+   Open your browser and go to http://localhost:5000
+
+   # Usage 🖥️
+## Linking a Device
+- Navigate to the **Link Device** page.
+- Select an email from the dropdown or enter a new one.
+- If the email is already in use, confirm the reassignment.
+- If the email is new, enter the user's name and proceed to Fitbit OAuth authorization.
+
+## Reassigning a Device
+- If an email is already associated with a user, you'll be prompted to confirm reassignment.
+- Enter the new user's name and proceed.
+
+## Confirmation Page
+- After successful linking or reassignment, you'll be redirected to a **confirmation page** with a countdown timer.
+- Once the countdown ends, the **Return to Home** button becomes clickable and expands to fill the container.
+
+---
+
+# Project Structure 📂
+```
+fitbit-device-linking/
+├── app.py                # Main Flask application
+├── config.py             # Configuration file (OAuth credentials, database settings)
+├── requirements.txt      # Python dependencies
+├── templates/            # HTML templates
+│   ├── base.html         # Base template
+│   ├── confirmation.html # Confirmation page
+│   ├── link_device.html  # Device linking page
+│   └── reassign_confirmation.html # Reassignment confirmation page
+├── static/               # Static files (CSS, JS, images)
+│   └── styles.css        # Custom styles
+└── README.md             # Project documentation
+```
+
+---
+
+# Contributing 🤝
+Contributions are welcome! If you'd like to contribute to this project, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/YourFeatureName
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m 'Add some feature'
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature/YourFeatureName
+   ```
+5. Open a pull request.
+
+
+
+# Acknowledgments 🙏
+- **Fitbit API**: For providing the OAuth 2.0 integration.
+- **Flask**: For making backend development simple and efficient.
+- **Bootstrap**: For the responsive and clean UI components.
+
+---
+
+# Screenshots 📸
+
+## Device Linking Page  
+**Device Linking Page**  
+<!-- Add a screenshot of the link device page -->
+
+## Confirmation Page  
+**Confirmation Page**  
+<!-- Add a screenshot of the confirmation page -->
+
+---
+
+
+
