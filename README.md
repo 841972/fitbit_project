@@ -1,6 +1,6 @@
 # Fitbit Device Linking Dashboard
 
-![Fitbit Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Fitbit_logo.svg/1280px-Fitbit_logo.svg.png) <!-- Add a Fitbit logo or any relevant image -->
+![Fitbit Logo](https://upload.wikimedia.org/wikipedia/commons/8/8e/Fitbit_logo_2016.svg)
 
 A Flask-based web application for linking and reassigning Fitbit devices to users. This project provides a user-friendly interface to manage Fitbit device associations, including features like device reassignment, user confirmation, and secure token handling.
 
