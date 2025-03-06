@@ -75,8 +75,8 @@ def generate_auth_url(code_challenge,state):
     Genera la URL de autorización para Fitbit con los parámetros adecuados.
     """
     # Lista de scopes
-    scopes = [ "activity%20heartrate%20location%20nutrition%20oxygen_saturation%20profile%20respiratory_rate%20settings%20sleep%20social%20temperature%20weight"]
-
+   # scopes = [ "activity%20heartrate%20location%20nutrition%20oxygen_saturation%20profile%20respiratory_rate%20settings%20sleep%20social%20temperature%20weight"]
+    scopes=["activity+cardio_fitness+electrocardiogram+heartrate+irregular_rhythm_notifications+location+nutrition+oxygen_saturation+profile+respiratory_rate+settings+sleep+social+temperature+weight"]
     # Convertir la lista de scopes en una cadena separada por espacios
     scopes_str = " ".join(scopes)
 

@@ -77,7 +77,27 @@ def init_db():
             print(f"Error al inicializar la base de datos: {e}")
         finally:
             connection.close()
-
+def get_latest_user_id_by_email(email):
+    """
+    Obtiene el user_id más reciente asociado a un correo electrónico.
+    """
+    conn = connect_to_db()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id FROM users
+                    WHERE email = %s
+                    ORDER BY linked_at DESC
+                    LIMIT 1;
+                """, (email,))
+                result = cur.fetchone()
+                return result[0] if result else None
+        except Exception as e:
+            print(f"Error al obtener el user_id más reciente: {e}")
+        finally:
+            conn.close()
+    return None
 def add_user(name, email, access_token=None, refresh_token=None):
     """
     Añade un nuevo usuario a la base de datos.
@@ -173,23 +193,106 @@ def save_to_db(user_id, date, **data):
 
 def get_user_tokens(email):
     """
-    Retrieve and decrypt tokens for a user.
+    Retrieve and decrypt tokens for the user with the most recent timestamp or highest user_id.
     """
     conn = connect_to_db()
     if conn:
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT access_token, refresh_token FROM users WHERE email = %s", (email,))
-                encrypted_access_token, encrypted_refresh_token = cur.fetchone()
-                # Decrypt the tokens
-                access_token = decrypt_token(encrypted_access_token)
-                refresh_token = decrypt_token(encrypted_refresh_token)
-                return access_token, refresh_token
+                cur.execute("""
+                    SELECT access_token, refresh_token 
+                    FROM users 
+                    WHERE email = %s 
+                    ORDER BY linked_at DESC, id DESC 
+                    LIMIT 1;
+                """, (email,))
+                result = cur.fetchone()
+                if result:
+                    encrypted_access_token, encrypted_refresh_token = result
+                    # Decrypt the tokens
+                    access_token = decrypt_token(encrypted_access_token)
+                    refresh_token = decrypt_token(encrypted_refresh_token)
+                    return access_token, refresh_token
         except Exception as e:
             print(f"Error retrieving user tokens: {e}")
         finally:
             conn.close()
     return None, None
+
+def get_unique_emails():
+    """
+    Obtiene una lista de emails únicos de la base de datos.
+    """
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT DISTINCT email FROM users;")
+                emails = [row[0] for row in cursor.fetchall()]
+                return emails
+        except Exception as e:
+            print(f"Error al obtener emails únicos: {e}")
+        finally:
+            connection.close()
+    return []
+
+def get_user_id_by_email(email):
+    """
+    Obtiene el ID del usuario más reciente a partir de su correo electrónico.
+
+    Args:
+        email (str): Correo electrónico del usuario.
+
+    Returns:
+        int: ID del usuario más reciente o None si no se encuentra.
+    """
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id FROM users
+                    WHERE email = %s
+                    ORDER BY linked_at DESC, id DESC
+                    LIMIT 1;
+                """, (email,))
+                result = cursor.fetchone()
+                return result[0] if result else None
+        except Exception as e:
+            print(f"Error al obtener el ID del usuario: {e}")
+        finally:
+            connection.close()
+    return None
+
+def update_users_tokens(email, access_token, refresh_token):
+    """
+    Actualiza los tokens de acceso y actualización de un usuario.
+
+    Args:
+        email (str): Correo electrónico del usuario.
+        access_token (str): Nuevo token de acceso.
+        refresh_token (str): Nuevo token de actualización.
+    """
+    # Encrypt the tokens before storing them
+    encrypted_access_token = encrypt_token(access_token)
+    encrypted_refresh_token = encrypt_token(refresh_token)
+    user_id=get_user_id_by_email(email)
+
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE users
+                    SET access_token = %s, refresh_token = %s
+                    WHERE id = %s;
+                """, (encrypted_access_token, encrypted_refresh_token, user_id))
+                connection.commit()
+                print(f"Tokens actualizados para {email}.")
+        except Exception as e:
+            print(f"Error al actualizar los tokens: {e}")
+        finally:
+            connection.close()
 def get_user_history(user_id):
     """
     Obtiene el historial completo de un usuario.
