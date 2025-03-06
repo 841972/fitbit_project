@@ -4,3 +4,4 @@ config.js
 .env
 .vscode
 credentials.json
+venv

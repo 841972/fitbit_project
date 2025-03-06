@@ -69,8 +69,16 @@ def link_device():
         if conn:
             try:
                 with conn.cursor() as cur:
-                    # Query to get all emails from the users table
-                    cur.execute("SELECT email FROM users")
+                    # Query to get the oldest email entries from the users table
+                    cur.execute("""
+                        SELECT email 
+                        FROM users 
+                        WHERE (email, linked_at) IN (
+                            SELECT email, MIN(linked_at)
+                            FROM users
+                            GROUP BY email
+                        )
+                    """)
                     emails = [row[0] for row in cur.fetchall()]  # Extract emails from the query result
             except Exception as e:
                 print(f"Error fetching emails from database: {e}")
@@ -79,8 +87,7 @@ def link_device():
                 conn.close()
         
         # Render the link_device.html template with the list of emails
-        return render_template('link_device.html', emails=emails)
-
+    return render_template('link_device.html', emails=emails)
 @app.route('/assign', methods=['GET', 'POST'])
 def assign_user():
     """
@@ -138,6 +145,12 @@ def callback():
     """
     # Get the authorization code from the query parameters
     code = request.args.get('code')
+    returned_state = request.args.get('state')
+     # Get the stored state from the session
+    stored_state = session.get('state')
+    #Verify that the returned state matches the stored state
+    if returned_state != stored_state:
+        return "Error: Invalid state parameter. Possible CSRF attack.", 400
     
     # Get the pending email and new user name from the session
     email = session.get('pending_email')
@@ -192,6 +205,7 @@ def callback():
                     session.pop('pending_email', None)
                     session.pop('new_user_name', None)
                     session.pop('code_verifier', None)
+                    session.pop('state', None)
                     
                     # Redirect to the confimation page
                     return render_template('confirmation.html', user_name=new_user_name, email=email)

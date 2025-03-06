@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2 import sql
 from config import DB_CONFIG
+from encryption import encrypt_token, decrypt_token
 
 def connect_to_db():
     """
@@ -90,6 +91,15 @@ def add_user(name, email, access_token=None, refresh_token=None):
     Returns:
         int: ID del usuario recién insertado.
     """
+
+    #If access_token and refresh_token are not None, encrypt them
+    if access_token and refresh_token:
+         # Encrypt the tokens before storing them
+        encrypted_access_token = encrypt_token(access_token)
+        encrypted_refresh_token = encrypt_token(refresh_token)
+    else:
+        encrypted_access_token = None
+        encrypted_refresh_token = None
     connection = connect_to_db()
     if connection:
         try:
@@ -100,7 +110,7 @@ def add_user(name, email, access_token=None, refresh_token=None):
                 VALUES (%s, %s, %s, %s)
                 RETURNING id;
                 """
-                cursor.execute(insert_query, (name, email, access_token, refresh_token))
+                cursor.execute(insert_query, (name, email, encrypted_access_token, encrypted_refresh_token))
                 user_id = cursor.fetchone()[0]  # Obtener el ID del usuario recién insertado
                 connection.commit()
                 print(f"Usuario {email} añadido exitosamente con ID {user_id}.")
@@ -161,6 +171,25 @@ def save_to_db(user_id, date, **data):
         finally:
             connection.close()
 
+def get_user_tokens(email):
+    """
+    Retrieve and decrypt tokens for a user.
+    """
+    conn = connect_to_db()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT access_token, refresh_token FROM users WHERE email = %s", (email,))
+                encrypted_access_token, encrypted_refresh_token = cur.fetchone()
+                # Decrypt the tokens
+                access_token = decrypt_token(encrypted_access_token)
+                refresh_token = decrypt_token(encrypted_refresh_token)
+                return access_token, refresh_token
+        except Exception as e:
+            print(f"Error retrieving user tokens: {e}")
+        finally:
+            conn.close()
+    return None, None
 def get_user_history(user_id):
     """
     Obtiene el historial completo de un usuario.
