@@ -2,10 +2,11 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from auth import generate_state, get_tokens, generate_code_verifier, generate_code_challenge, generate_auth_url
 from db import connect_to_db, add_user
 from config import CLIENT_ID, REDIRECT_URI
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = "supersecretkey123!@#"  # Secret key for session management
+app.secret_key = os.getenv('SECRET_KEY')
 
 # Route: Homepage (Dashboard)
 @app.route('/')
