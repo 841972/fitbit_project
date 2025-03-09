@@ -80,7 +80,7 @@ def get_fitbit_data(access_token, email):
     print(f"Sleep API response status: {response.status_code}")
     print(f"Sleep API response: {response.json()}")
     sleep_data = response.json()
-    sleep_minutes = sum([log.get("minutesAsleep", 0) for log in sleep_data.get("totalMinitesAsleep", [])])
+    sleep_minutes = sum([log.get("minutesAsleep", 0) for log in sleep_data.get("sleep", [])])
 
     # Nutrición (calorías consumidas)
     nutrition_url = f"https://api.fitbit.com/1/user/-/foods/log/date/{today}.json"
@@ -116,13 +116,15 @@ def get_fitbit_data(access_token, email):
     spo2_data = response.json()
     spo2 = spo2_data.get("value", 0)
 
-    # Frecuencia respiratoria
+ # Frecuencia respiratoria
     respiratory_rate_url = f"https://api.fitbit.com/1/user/-/br/date/{today}.json"
     response = requests.get(respiratory_rate_url, headers=headers)
     print(f"Respiratory Rate API response status: {response.status_code}")
     print(f"Respiratory Rate API response: {response.json()}")
     respiratory_rate_data = response.json()
-    respiratory_rate = respiratory_rate_data.get("br", [{}])[0].get("value", 0)
+    respiratory_rate = 0  # Valor por defecto
+    if respiratory_rate_data.get("br"):
+        respiratory_rate = respiratory_rate_data.get("br", [{}])[0].get("value", 0)
 
     # Temperatura corporal
     temperature_url = f"https://api.fitbit.com/1/user/-/temp/core/date/{today}.json"
@@ -149,9 +151,6 @@ def get_fitbit_data(access_token, email):
         sedentary_minutes=sedentary_minutes,
         nutrition_calories=nutrition_calories,
         water=water,
-        # weight=weight,
-        # bmi=bmi,
-        # fat=fat,
         oxygen_saturation=spo2,
         respiratory_rate=respiratory_rate,
         temperature=temperature
@@ -171,9 +170,6 @@ def get_fitbit_data(access_token, email):
     print(f"Sleep Minutes: {sleep_minutes} min")
     print(f"Nutrition Calories: {nutrition_calories} kcal")
     print(f"Water: {water} L")
-    print(f"Weight: {weight} kg")
-    print(f"BMI: {bmi}")
-    print(f"Fat: {fat}%")
     print(f"SpO2: {spo2}%")
     print(f"Respiratory Rate: {respiratory_rate} breaths/min")
     print(f"Temperature: {temperature} °C")
