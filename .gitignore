@@ -6,3 +6,4 @@ config.js
 credentials.json
 venv
 test.py
+access.pem
