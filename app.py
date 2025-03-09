@@ -3,7 +3,6 @@ from auth import generate_state, get_tokens, generate_code_verifier, generate_co
 from db import connect_to_db, add_user
 from config import CLIENT_ID, REDIRECT_URI
 import os
-from flask_httpauth import HTTPBasicAuth
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_login import LoginManager, UserMixin
 
