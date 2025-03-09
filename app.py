@@ -24,19 +24,19 @@ login_manager.login_view = 'login'  # Ruta para el inicio de sesión
 
 if FLASK_ENV == 'production':
     # Modo producción: usar IP pública y HTTPS
-    HOST = os.getenv('PRODUCTION_HOST', '13.60.53.178')
-    PORT = int(os.getenv('PRODUCTION_PORT', 5000))
+    HOST = os.getenv('PRODUCTION_HOST')
+    PORT = int(os.getenv('PRODUCTION_PORT'))
     SSL_CONTEXT = (
-        os.getenv('SSL_CERT', '/home/ubuntu/ssl/cert.pem'),  # Ruta al certificado
-        os.getenv('SSL_KEY', '/home/ubuntu/ssl/key.pem')     # Ruta a la clave privada
+        os.getenv('SSL_CERT'),  # Ruta al certificado
+        os.getenv('SSL_KEY')     # Ruta a la clave privada
     )
     DEBUG = False
 else:
     # Modo desarrollo: usar localhost y HTTP
-    HOST = os.getenv('HOST', 'localhost')
-    PORT = int(os.getenv('PORT', 5000))
+    HOST = os.getenv('HOST')
+    PORT = int(os.getenv('PORT'))
     SSL_CONTEXT = None
-    DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+    DEBUG = os.getenv('DEBUG').lower() == 'true'
 # Modelo de usuario
 class User(UserMixin):
     def __init__(self, id):
