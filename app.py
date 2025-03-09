@@ -1,15 +1,70 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from auth import generate_state, get_tokens, generate_code_verifier, generate_code_challenge, generate_auth_url
 from db import connect_to_db, add_user
 from config import CLIENT_ID, REDIRECT_URI
 import os
+from flask_httpauth import HTTPBasicAuth
+from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import LoginManager, UserMixin
 
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
+USERNAME = os.getenv('log_USERNAME')  
+PASSWORD = os.getenv('PASSWORD')
+# Inicializa la autenticación
 
+# Configurar Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # Ruta para el inicio de sesión
+
+# Modelo de usuario
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+
+# Cargar el usuario
+@login_manager.user_loader
+def load_user(user_id):
+    return User(user_id)
+
+# Ruta de inicio de sesión
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))  # Si ya está autenticado, redirige al inicio
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        print(username)
+        print(USERNAME)
+        print(password)
+        print(PASSWORD)
+        if username == USERNAME and password == PASSWORD:
+            user = User(username)
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Usuario o contraseña incorrectos')
+    return render_template('login.html')
+
+# Ruta de cierre de sesión
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+# Proteger todas las rutas con @login_required
+@app.before_request
+def require_login():
+    if not current_user.is_authenticated and request.endpoint != 'login':
+        return redirect(url_for('login'))
 # Route: Homepage (Dashboard)
 @app.route('/')
+@login_required
 def index():
     """
     Render the dashboard homepage.
@@ -20,6 +75,7 @@ def index():
 
 # Route: Link a new Fitbit device
 @app.route('/link', methods=['GET', 'POST'])
+@login_required
 def link_device():
     """
     Handle the linking of a new Fitbit device.
@@ -90,6 +146,7 @@ def link_device():
         # Render the link_device.html template with the list of emails
     return render_template('link_device.html', emails=emails)
 @app.route('/assign', methods=['GET', 'POST'])
+@login_required
 def assign_user():
     """
     Handle the assignment of a new user.
@@ -139,6 +196,7 @@ def assign_user():
         return render_template('assign_user.html')
 # Route: Fitbit OAuth callback
 @app.route('/callback')
+@login_required
 def callback():
     """
     Handle the callback from Fitbit after the user authorizes the app.
@@ -222,6 +280,7 @@ def callback():
         return "Error: No se proporcionó un correo electrónico.", 400
     
 @app.route('/reassign', methods=['POST'])
+@login_required
 def reassign_device():
     """
     Handle the reassignment of a Fitbit device to a new user.
@@ -272,3 +331,8 @@ def reassign_device():
         return "Error: No se pudo conectar a la base de datos.", 500# Run the Flask app
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, ssl_context=(
+#         '/home/ubuntu/ssl/cert.pem',  # Ruta al certificado
+#         '/home/ubuntu/ssl/key.pem'    # Ruta a la clave privada
+#     ))
