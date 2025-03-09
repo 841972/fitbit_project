@@ -10,15 +10,33 @@ from flask_login import LoginManager, UserMixin
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
+# Obtener el modo de ejecución
+FLASK_ENV = os.getenv('FLASK_ENV', 'development')  # Por defecto, modo desarrollo
 USERNAME = os.getenv('log_USERNAME')  
 PASSWORD = os.getenv('PASSWORD')
-# Inicializa la autenticación
+
 
 # Configurar Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Ruta para el inicio de sesión
 
+
+if FLASK_ENV == 'production':
+    # Modo producción: usar IP pública y HTTPS
+    HOST = os.getenv('PRODUCTION_HOST', '13.60.53.178')
+    PORT = int(os.getenv('PRODUCTION_PORT', 5000))
+    SSL_CONTEXT = (
+        os.getenv('SSL_CERT', '/home/ubuntu/ssl/cert.pem'),  # Ruta al certificado
+        os.getenv('SSL_KEY', '/home/ubuntu/ssl/key.pem')     # Ruta a la clave privada
+    )
+    DEBUG = False
+else:
+    # Modo desarrollo: usar localhost y HTTP
+    HOST = os.getenv('HOST', 'localhost')
+    PORT = int(os.getenv('PORT', 5000))
+    SSL_CONTEXT = None
+    DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 # Modelo de usuario
 class User(UserMixin):
     def __init__(self, id):
@@ -330,9 +348,4 @@ def reassign_device():
     else:
         return "Error: No se pudo conectar a la base de datos.", 500# Run the Flask app
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=5000, ssl_context=(
-#         '/home/ubuntu/ssl/cert.pem',  # Ruta al certificado
-#         '/home/ubuntu/ssl/key.pem'    # Ruta a la clave privada
-#     ))
+    app.run(host=HOST, port=PORT, debug=DEBUG, ssl_context=SSL_CONTEXT)
