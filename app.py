@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from logging.handlers import RotatingFileHandler
+from flask import Flask, logging, render_template, request, redirect, session, url_for, flash
 from auth import generate_state, get_tokens, generate_code_verifier, generate_code_challenge, generate_auth_url
 from db import connect_to_db, add_user
 from config import CLIENT_ID, REDIRECT_URI
@@ -211,6 +212,14 @@ def assign_user():
     else:
         # If it's a GET request, render the assign_user.html template
         return render_template('assign_user.html')
+
+# Configurar el registro
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=1)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
+
 # Route: Fitbit OAuth callback
 @app.route('/callback')
 @login_required
@@ -219,83 +228,92 @@ def callback():
     Handle the callback from Fitbit after the user authorizes the app.
     This route captures the authorization code and exchanges it for access and refresh tokens.
     """
-    # Get the authorization code from the query parameters
-    code = request.args.get('code')
-    returned_state = request.args.get('state')
-     # Get the stored state from the session
-    stored_state = session.get('state')
-    #Verify that the returned state matches the stored state
-    if returned_state != stored_state:
-        return "Error: Invalid state parameter. Possible CSRF attack.", 400
-    
-    # Get the pending email and new user name from the session
-    email = session.get('pending_email')
-    new_user_name = session.get('new_user_name')
-    code_verifier = session.get('code_verifier')
-    
-    if email:
-        conn = connect_to_db()
-        if conn:
-            try:
-                with conn.cursor() as cur:
-                    # Query to check if the email is already in use
-                    cur.execute("SELECT id, access_token, refresh_token FROM users WHERE email = %s", (email,))
-                    existing_user = cur.fetchone()
-                    
-                    if existing_user:
-                        user_id, existing_access_token, existing_refresh_token = existing_user
-                        
-                        # Flow 2: Reassign the device to a new user
-                        if new_user_name:
-                            if not existing_access_token or not existing_refresh_token:
-                                # If tokens are missing, require reauthorization
+    try:
+        # Get the authorization code from the query parameters
+        code = request.args.get('code')
+        returned_state = request.args.get('state')
+        # Get the stored state from the session
+        stored_state = session.get('state')
+        # Verify that the returned state matches the stored state
+        if returned_state != stored_state:
+            app.logger.error("Invalid state parameter. Possible CSRF attack.")
+            return "Error: Invalid state parameter. Possible CSRF attack.", 400
+
+        # Get the pending email and new user name from the session
+        email = session.get('pending_email')
+        new_user_name = session.get('new_user_name')
+        code_verifier = session.get('code_verifier')
+
+        if email:
+            conn = connect_to_db()
+            if conn:
+                try:
+                    with conn.cursor() as cur:
+                        # Query to check if the email is already in use
+                        cur.execute("SELECT id, access_token, refresh_token FROM users WHERE email = %s", (email,))
+                        existing_user = cur.fetchone()
+
+                        if existing_user:
+                            user_id, existing_access_token, existing_refresh_token = existing_user
+
+                            # Flow 2: Reassign the device to a new user
+                            if new_user_name:
+                                if not existing_access_token or not existing_refresh_token:
+                                    # If tokens are missing, require reauthorization
+                                    if code:
+                                        # Exchange the authorization code for new tokens
+                                        access_token, refresh_token = get_tokens(code, code_verifier)
+                                        # Add a new user with the same email and new name
+                                        add_user(new_user_name, email, access_token, refresh_token)
+                                        app.logger.info(f"Dispositivo reasignado a {new_user_name} ({email}) con nuevos tokens.")
+                                    else:
+                                        app.logger.error("Se requiere autorización para reasignar el dispositivo.")
+                                        return "Error: Se requiere autorización para reasignar el dispositivo.", 400
+                                else:
+                                    # If tokens are valid, simply add a new user with the same email and new name
+                                    add_user(new_user_name, email, existing_access_token, existing_refresh_token)
+                                    app.logger.info(f"Dispositivo reasignado a {new_user_name} ({email}) sin necesidad de reautorización.")
+                            else:
+                                app.logger.error("Se requiere un nombre de usuario para reasignar el dispositivo.")
+                                return "Error: Se requiere un nombre de usuario para reasignar el dispositivo.", 400
+                        else:
+                            # Flow 1: Link a new email to a user
+                            if new_user_name:
                                 if code:
                                     # Exchange the authorization code for new tokens
-                                    access_token, refresh_token = get_tokens(code, code_verifier)
-                                    # Add a new user with the same email and new name
+                                    access_token, refresh_token = get_tokens(code)
+                                    # Add a new user with the new email and name
                                     add_user(new_user_name, email, access_token, refresh_token)
-                                    print(f"Dispositivo reasignado a {new_user_name} ({email}) con nuevos tokens:: {access_token} y refresh ::{refresh_token}")
+                                    app.logger.info(f"Nuevo usuario {new_user_name} ({email}) añadido.")
                                 else:
-                                    return "Error: Se requiere autorización para reasignar el dispositivo.", 400
+                                    app.logger.error("Se requiere autorización para vincular un nuevo correo.")
+                                    return "Error: Se requiere autorización para vincular un nuevo correo.", 400
                             else:
-                                # If tokens are valid, simply add a new user with the same email and new name
-                                add_user(new_user_name, email, existing_access_token, existing_refresh_token)
-                                print(f"Dispositivo reasignado a {new_user_name} ({email}) sin necesidad de reautorización.")
-                        else:
-                            return "Error: Se requiere un nombre de usuario para reasignar el dispositivo.", 400
-                    else:
-                        # Flow 1: Link a new email to a user
-                        if new_user_name:
-                            if code:
-                                # Exchange the authorization code for new tokens
-                                access_token, refresh_token = get_tokens(code)
-                                # Add a new user with the new email and name
-                                add_user(new_user_name, email, access_token, refresh_token)
-                                print(f"Nuevo usuario {new_user_name} ({email}) añadido.")
-                            else:
-                                return "Error: Se requiere autorización para vincular un nuevo correo.", 400
-                        else:
-                            return "Error: Se requiere un nombre de usuario para vincular un nuevo correo.", 400
-                    
-                    # Clear the session data
-                    session.pop('pending_email', None)
-                    session.pop('new_user_name', None)
-                    session.pop('code_verifier', None)
-                    session.pop('state', None)
-                    
-                    # Redirect to the confimation page
-                    return render_template('confirmation.html', user_name=new_user_name, email=email)
-            except Exception as e:
-                # Handle errors during token exchange
-                return f"Error: {e}", 400
-            finally:
-                conn.close()
+                                app.logger.error("Se requiere un nombre de usuario para vincular un nuevo correo.")
+                                return "Error: Se requiere un nombre de usuario para vincular un nuevo correo.", 400
+
+                        # Clear the session data
+                        session.pop('pending_email', None)
+                        session.pop('new_user_name', None)
+                        session.pop('code_verifier', None)
+                        session.pop('state', None)
+
+                        # Redirect to the confirmation page
+                        return render_template('confirmation.html', user_name=new_user_name, email=email)
+                except Exception as e:
+                    app.logger.error(f"Error during token exchange: {e}")
+                    return f"Error: {e}", 400
+                finally:
+                    conn.close()
+            else:
+                app.logger.error("No se pudo conectar a la base de datos.")
+                return "Error: No se pudo conectar a la base de datos.", 500
         else:
-            return "Error: No se pudo conectar a la base de datos.", 500
-    else:
-        # Handle missing email
-        return "Error: No se proporcionó un correo electrónico.", 400
-    
+            app.logger.error("No se proporcionó un correo electrónico.")
+            return "Error: No se proporcionó un correo electrónico.", 400
+    except Exception as e:
+        app.logger.error(f"Unexpected error: {e}")
+        return f"Error: {e}", 500
 @app.route('/reassign', methods=['POST'])
 @login_required
 def reassign_device():
