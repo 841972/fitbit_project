@@ -7,3 +7,4 @@ credentials.json
 venv
 test.py
 access.pem
+app.log
