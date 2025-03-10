@@ -36,7 +36,7 @@ if FLASK_ENV == 'production':
 else:
     # Modo desarrollo: usar localhost y HTTP
     HOST = os.getenv('HOST')
-    PORT = int(os.getenv('PORT'))
+    PORT = int(os.getenv('PRODUCTION_PORT'))
     SSL_CONTEXT = None
     DEBUG = os.getenv('DEBUG').lower() == 'true'
 # Modelo de usuario
