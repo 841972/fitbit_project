@@ -101,70 +101,74 @@ def link_device():
     Handle the linking of a new Fitbit device.
     Generates an authorization URL and redirects the user to Fitbit's OAuth page.
     """
-    if request.method == 'POST':
-        # Get the selected email from the dropdown
-        email = request.form['email']
+    try:
+        if request.method == 'POST':
+            # Get the selected email from the dropdown
+            email = request.form['email']
+            
+            # Check if the email is already in use
+            conn = connect_to_db()
+            if conn:
+                try:
+                    with conn.cursor() as cur:
+                        # Query to get the current user associated with the email, ordered by the most recent linked_at timestamp
+                        cur.execute("""
+                            SELECT name, linked_at 
+                            FROM users 
+                            WHERE email = %s 
+                            ORDER BY linked_at DESC 
+                            LIMIT 1
+                        """, (email,))
+                        existing_user = cur.fetchone()
+                        
+                        if existing_user and existing_user[0]:
+                            # If the email is already in use, show a confirmation page with the most recent user
+                            current_user_name = existing_user[0]
+                            last_linked_at = existing_user[1]
+                            return render_template('reassign_confirmation.html', 
+                                                email=email, 
+                                                current_user_name=current_user_name,
+                                                last_linked_at=last_linked_at)
+                        else:
+                            # If the email is not in use assign user name and proceed to authorization
+                            session['pending_email'] = email
+                            return redirect(url_for('assign_user'))
+                except Exception as e:
+                    print(f"Error checking email in database: {e}")
+                    return "Error: No se pudo verificar el correo.", 500
+                finally:
+                    conn.close()
+            else:
+                return "Error: No se pudo conectar a la base de datos.", 500
         
-        # Check if the email is already in use
-        conn = connect_to_db()
-        if conn:
-            try:
-                with conn.cursor() as cur:
-                    # Query to get the current user associated with the email, ordered by the most recent linked_at timestamp
-                    cur.execute("""
-                        SELECT name, linked_at 
-                        FROM users 
-                        WHERE email = %s 
-                        ORDER BY linked_at DESC 
-                        LIMIT 1
-                    """, (email,))
-                    existing_user = cur.fetchone()
-                    
-                    if existing_user and existing_user[0]:
-                        # If the email is already in use, show a confirmation page with the most recent user
-                        current_user_name = existing_user[0]
-                        last_linked_at = existing_user[1]
-                        return render_template('reassign_confirmation.html', 
-                                              email=email, 
-                                              current_user_name=current_user_name,
-                                              last_linked_at=last_linked_at)
-                    else:
-                        # If the email is not in use assign user name and proceed to authorization
-                        session['pending_email'] = email
-                        return redirect(url_for('assign_user'))
-            except Exception as e:
-                print(f"Error checking email in database: {e}")
-                return "Error: No se pudo verificar el correo.", 500
-            finally:
-                conn.close()
         else:
-            return "Error: No se pudo conectar a la base de datos.", 500
-    
-    else:
-        # If it's a GET request, fetch the list of emails from the database
-        conn = connect_to_db()
-        if conn:
-            try:
-                with conn.cursor() as cur:
-                    # Query to get the oldest email entries from the users table
-                    cur.execute("""
-                        SELECT email 
-                        FROM users 
-                        WHERE (email, linked_at) IN (
-                            SELECT email, MIN(linked_at)
-                            FROM users
-                            GROUP BY email
-                        )
-                    """)
-                    emails = [row[0] for row in cur.fetchall()]  # Extract emails from the query result
-            except Exception as e:
-                print(f"Error fetching emails from database: {e}")
-                emails = []  # Fallback to an empty list in case of error
-            finally:
-                conn.close()
-        
-        # Render the link_device.html template with the list of emails
-    return render_template('link_device.html', emails=emails)
+            # If it's a GET request, fetch the list of emails from the database
+            conn = connect_to_db()
+            if conn:
+                try:
+                    with conn.cursor() as cur:
+                        # Query to get the oldest email entries from the users table
+                        cur.execute("""
+                            SELECT email 
+                            FROM users 
+                            WHERE (email, linked_at) IN (
+                                SELECT email, MIN(linked_at)
+                                FROM users
+                                GROUP BY email
+                            )
+                        """)
+                        emails = [row[0] for row in cur.fetchall()]  # Extract emails from the query result
+                except Exception as e:
+                    print(f"Error fetching emails from database: {e}")
+                    emails = []  # Fallback to an empty list in case of error
+                finally:
+                    conn.close()
+            
+            # Render the link_device.html template with the list of emails
+        return render_template('link_device.html', emails=emails)
+    except Exception as e:
+        app.logger.error(f"Unexpected error: {e}")
+        return f"Error: {e}", 500
 @app.route('/assign', methods=['GET', 'POST'])
 @login_required
 def assign_user():
