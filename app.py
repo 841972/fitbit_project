@@ -23,7 +23,7 @@ login_manager.login_view = 'login'  # Ruta para el inicio de sesión
 
 if FLASK_ENV == 'production':
     # Modo producción: usar IP pública y HTTPS
-    HOST = os.getenv('PRODUCTION_HOST')
+    HOST = os.getenv('PRODUCTION_HOST','0.0.0.0')
     PORT = int(os.getenv('PRODUCTION_PORT'))
     SSL_CONTEXT = (
         os.getenv('SSL_CERT'),  # Ruta al certificado

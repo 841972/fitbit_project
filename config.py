@@ -9,7 +9,8 @@ ADMIN_PSSW = os.getenv("ADMIN_PSSW")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 # Configuración de la aplicación Fitbit
-REDIRECT_URI = "http://localhost:5000/callback"  # Cambiar si usas un servidor web
+# REDIRECT_URI = "http://localhost:5000/callback"  # Cambiar si usas un servidor web
+REDIRECT_URI = "https://35.180.127.75:5000/callback"
 AUTH_URL = "https://www.fitbit.com/oauth2/authorize"
 TOKEN_URL = "https://api.fitbit.com/oauth2/token"
 
