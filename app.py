@@ -6,6 +6,8 @@ from config import CLIENT_ID, REDIRECT_URI
 import os
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_login import LoginManager, UserMixin
+import logging
+from logging.handlers import RotatingFileHandler
 
 # Initialize Flask app
 app = Flask(__name__)
