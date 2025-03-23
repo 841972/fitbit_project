@@ -371,4 +371,5 @@ def reassign_device():
     else:
         return "Error: No se pudo conectar a la base de datos.", 500# Run the Flask app
 if __name__ == '__main__':
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    # app.run(host=HOST, port=PORT, debug=DEBUG)
+    app.run(debug=True)
