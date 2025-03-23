@@ -9,7 +9,7 @@ ADMIN_PSSW = os.getenv("ADMIN_PSSW")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 if os.getenv("FLASK_ENV") == "production":
-    REDIRECT_URI = "https://35.180.127.75:5000/callback"
+    REDIRECT_URI = "https://tango.ing.unimo.it/livelyageing/callback"
 else:
     REDIRECT_URI = "http://localhost:5000/callback"
 AUTH_URL = "https://www.fitbit.com/oauth2/authorize"

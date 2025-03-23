@@ -8,3 +8,5 @@ venv
 test.py
 access.pem
 app.log
+.qodo
+.ssh
