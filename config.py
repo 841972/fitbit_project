@@ -11,7 +11,7 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 if os.getenv("FLASK_ENV") == "production":
     REDIRECT_URI = "https://tango.ing.unimo.it/livelyageing/callback"
 else:
-    REDIRECT_URI = "http://localhost:5000/callback"
+    REDIRECT_URI = "https://tango.ing.unimo.it/livelyageing/callback"
 AUTH_URL = "https://www.fitbit.com/oauth2/authorize"
 TOKEN_URL = "https://api.fitbit.com/oauth2/token"
 
