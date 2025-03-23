@@ -32,7 +32,7 @@ if FLASK_ENV == 'production':
     #     os.getenv('SSL_CERT'),  # Ruta al certificado
     #     os.getenv('SSL_KEY')     # Ruta a la clave privada
     # )
-    DEBUG = False
+    DEBUG = True
 else:
     # Modo desarrollo: usar localhost y HTTP
     HOST = os.getenv('HOST')
@@ -50,7 +50,7 @@ def load_user(user_id):
     return User(user_id)
 
 # Ruta de inicio de sesión
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/livelyageing/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))  # Si ya está autenticado, redirige al inicio
@@ -71,7 +71,7 @@ def login():
     return render_template('login.html')
 
 # Ruta de cierre de sesión
-@app.route('/logout')
+@app.route('/livelyageing/logout')
 @login_required
 def logout():
     logout_user()
