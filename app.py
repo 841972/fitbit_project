@@ -28,15 +28,15 @@ if FLASK_ENV == 'production':
     # Modo producción: usar IP pública y HTTPS
     HOST = os.getenv('PRODUCTION_HOST','0.0.0.0')
     PORT = int(os.getenv('PRODUCTION_PORT'))
-    SSL_CONTEXT = (
-        os.getenv('SSL_CERT'),  # Ruta al certificado
-        os.getenv('SSL_KEY')     # Ruta a la clave privada
-    )
+    # SSL_CONTEXT = (
+    #     os.getenv('SSL_CERT'),  # Ruta al certificado
+    #     os.getenv('SSL_KEY')     # Ruta a la clave privada
+    # )
     DEBUG = False
 else:
     # Modo desarrollo: usar localhost y HTTP
     HOST = os.getenv('HOST')
-    PORT = int(os.getenv('PRODUCTION_PORT'))
+    PORT = int(os.getenv('PORT'))
     SSL_CONTEXT = None
     DEBUG = os.getenv('DEBUG').lower() == 'true'
 # Modelo de usuario
