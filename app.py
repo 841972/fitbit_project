@@ -83,7 +83,7 @@ def require_login():
     if not current_user.is_authenticated and request.endpoint != 'login':
         return redirect(url_for('login'))
 # Route: Homepage (Dashboard)
-@app.route('/')
+@app.route('/livelyageing/')
 @login_required
 def index():
     """
@@ -94,7 +94,7 @@ def index():
     return render_template('dashboard.html')
 
 # Route: Link a new Fitbit device
-@app.route('/link', methods=['GET', 'POST'])
+@app.route('/livelyageing/link', methods=['GET', 'POST'])
 @login_required
 def link_device():
     """
@@ -169,7 +169,7 @@ def link_device():
     except Exception as e:
         app.logger.error(f"Unexpected error: {e}")
         return f"Error: {e}", 500
-@app.route('/assign', methods=['GET', 'POST'])
+@app.route('/livelyageing/assign', methods=['GET', 'POST'])
 @login_required
 def assign_user():
     """
@@ -227,7 +227,7 @@ handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
 # Route: Fitbit OAuth callback
-@app.route('/callback')
+@app.route('/livelyageing/callback')
 @login_required
 def callback():
     """
@@ -320,7 +320,7 @@ def callback():
     except Exception as e:
         app.logger.error(f"Unexpected error: {e}")
         return f"Error: {e}", 500
-@app.route('/reassign', methods=['POST'])
+@app.route('/livelyageing/reassign', methods=['POST'])
 @login_required
 def reassign_device():
     """
