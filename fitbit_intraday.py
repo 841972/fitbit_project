@@ -49,19 +49,21 @@ def get_intraday_data(access_token, email):
     headers = {"Authorization": f"Bearer {access_token}"}
     today = datetime.now().strftime("%Y-%m-%d")
     user_id = get_latest_user_id_by_email(email)
-    
 
     # Intraday Steps (1-minute granularity)
     steps_intraday_url = f"https://api.fitbit.com/1/user/-/activities/steps/date/{today}/1d/1min.json"
     response = requests.get(steps_intraday_url, headers=headers)
-    if (response.status_code == 401 and  response.json().get("errors", [{}])[0].get("errorType") == "expired_token"):
+    if response.status_code == 401 and response.json().get("errors", [{}])[0].get("errorType") == "expired_token":
         raise requests.exceptions.HTTPError("Token expirado", response=response)
     if response.status_code == 200:
-        steps_data = response.json().get("activities-steps-intraday", {}).get("dataset",)
-        for item in steps_data:
-            timestamp = datetime.strptime(f"{today} {item['time']}", "%Y-%m-%d %H:%M:%S")
-            save_intraday_data(user_id, timestamp, "steps_intraday", item['value'])
-        print(f"Intraday Steps data collected for {email}")
+        steps_data = response.json().get("activities-steps-intraday", {}).get("dataset", None)
+        if steps_data:  # Verifica si steps_data no es None
+            for item in steps_data:
+                timestamp = datetime.strptime(f"{today} {item['time']}", "%Y-%m-%d %H:%M:%S")
+                save_intraday_data(user_id, timestamp, "steps_intraday", item['value'])
+            print(f"Intraday Steps data collected for {email}")
+        else:
+            print(f"No intraday steps data available for {email}. Response: {response.json()}")
     else:
         print(f"Error fetching intraday steps for {email}: {response.status_code}, {response.text}")
 
