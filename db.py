@@ -70,6 +70,38 @@ def init_db():
                         temperature FLOAT
                     );
                 """)
+                 # Tabla para pasos intradía
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS fitbit_intraday_steps_intraday (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                        value INTEGER
+                    );
+                """)
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_steps_user_timestamp ON fitbit_intraday_steps_intraday (user_id, timestamp);")
+
+                # Tabla para frecuencia cardíaca intradía
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS fitbit_intraday_heart_rate_intraday (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                        value INTEGER
+                    );
+                """)
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_heart_rate_user_timestamp ON fitbit_intraday_heart_rate_intraday (user_id, timestamp);")
+
+                # Tabla para minutos en zona activa intradía
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS fitbit_intraday_active_zone_minutes_intraday (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                        value INTEGER
+                    );
+                """)
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_azm_user_timestamp ON fitbit_intraday_active_zone_minutes_intraday (user_id, timestamp);")
 
                 connection.commit()
                 print("Tablas creadas (si no existían).")
@@ -98,6 +130,26 @@ def get_latest_user_id_by_email(email):
         finally:
             conn.close()
     return None
+
+def insert_intraday_data(user_id, timestamp, data_type, value):
+    conn = connect_to_db()
+    cursor = conn.cursor()
+    table_name = f"fitbit_intraday_{data_type}"
+    try:
+        cursor.execute(f"""
+            INSERT INTO {table_name} (user_id, timestamp, value)
+            VALUES (%s, %s, %s);
+        """, (user_id, timestamp, value))
+        conn.commit()
+    except psycopg2.errors.UndefinedTable:
+        print(f"La tabla {table_name} no existe. Asegúrate de crearla.")
+        conn.rollback()
+    except Exception as e:
+        print(f"Error al insertar datos intradía en {table_name}: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
 def add_user(name, email, access_token=None, refresh_token=None):
     """
     Añade un nuevo usuario a la base de datos.
